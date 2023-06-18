@@ -1,0 +1,5 @@
+class Hello
+  def hello
+    "hello"
+  end
+end

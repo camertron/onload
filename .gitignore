@@ -1,0 +1,7 @@
+.DS_Store
+Gemfile.lock
+gemfiles/*.lock
+.tool-versions
+pkg/
+spec/fixtures/hello.rb
+spec/rails/dummy/log/
