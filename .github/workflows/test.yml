@@ -28,6 +28,6 @@ jobs:
         env:
           BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails-version }}.gemfile
       - name: Run Tests
-        run: bundle exec rspec
+        run: bundle exec rake spec:ruby && bundle exec rake spec:rails
         env:
           BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails-version }}.gemfile
