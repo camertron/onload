@@ -2,13 +2,13 @@
 
 require "onload"
 
-class UpcaseLoader
+class UpcasePreprocessor
   def self.call(source)
     source.gsub(/(\"\w+\")/, '\1.upcase')
   end
 end
 
-Onload.register(".up", UpcaseLoader)
+Onload.register(".up", UpcasePreprocessor)
 
 module Onload
   module TestHelpers

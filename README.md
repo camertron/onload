@@ -20,22 +20,22 @@ Onload lets you transform Ruby code just before it's loaded into the Ruby interp
 
 ## Usage
 
-Let's write an (admittedly contrived) loader that upcases literal strings in Ruby files. We'll use the file extension .up to indicate which files to process.
+Let's write an (admittedly contrived) preprocessor that upcases literal strings in Ruby files. We'll use the file extension .up to indicate which files to process.
 
-Loaders can be any Ruby object that responds to the `#call` method.
+Preprocessors can be any Ruby object that responds to the `#call` method.
 
 ```ruby
-class UpcaseLoader
+class UpcasePreprocessor
   def self.call(source)
     source.gsub(/(\"\w+\")/, '\1.upcase')
   end
 end
 ```
 
-Next we'll tell onload about our loader.
+Next we'll tell onload about our preprocessor.
 
 ```ruby
-Onload.register(".up", UpcaseLoader)
+Onload.register(".up", UpcasePreprocessor)
 ```
 
 Finally, we'll load the necessary monkeypatches by "installing" onload into the interpreter. In Rails environments you can skip this step, as it is done for you via the included railtie.
@@ -44,7 +44,7 @@ Finally, we'll load the necessary monkeypatches by "installing" onload into the 
 Onload.install!
 ```
 
-Now, the contents of any file with a .up file extension will be passed to `UpcaseLoader.call`. The return value will be written to a separate Ruby file and loaded instead of the original .up file.
+Now, the contents of any file with a .up file extension will be passed to `UpcasePreprocessor.call`. The return value will be written to a separate Ruby file and loaded instead of the original .up file.
 
 ## Running Tests
 
