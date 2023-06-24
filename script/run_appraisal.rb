@@ -2,67 +2,174 @@
 
 require "yaml"
 
-$installed_ruby_versions_by_minor = `asdf list ruby`
-  .split("\n")
-  .map { |v| v.sub("*", "").strip }
-  .select { |v| v =~ /\A\d\.\d\.\d\z/ }
-  .group_by { |v| v.split(".")[0...2].join(".") }
-  .each_with_object({}) do |(minor, versions), memo|
-    memo[minor] = versions.sort.last
+class ActionsManifest
+  def initialize(file)
+    @config ||= YAML.load_file(file)
   end
 
-actions_config = YAML.load_file(".github/workflows/test.yml")
-matrix_config = actions_config.dig('jobs', 'build', 'strategy', 'matrix')
-ruby_versions = matrix_config['ruby-version']
-rails_versions = matrix_config['rails-version']
-excludes = matrix_config['exclude']
-
-exclude_tuples = excludes.map { |e| [e['ruby-version'], e['rails-version']] }
-
-matrix = ruby_versions.flat_map do |ruby_version|
-  rails_versions.filter_map do |rails_version|
-    tuple = [ruby_version, rails_version]
-    exclude_tuples.include?(tuple) ? nil : tuple
+  def matrix_for(job_name)
+    Matrix.new(
+      @config.dig('jobs', job_name, 'strategy', 'matrix')
+    )
   end
 end
 
-def run(ruby_version, cmd, env = {}, prefix: '')
-  asdf_ruby_version = $installed_ruby_versions_by_minor[ruby_version]
-  env["ASDF_RUBY_VERSION"] = asdf_ruby_version
-  env_str = env.map { |k, v| "#{k}=#{v}" }.join(" ")
-  install_path = `asdf where ruby #{asdf_ruby_version}`.strip
-  env["PATH"] = "#{File.join(install_path, "bin")}:#{ENV["PATH"]}"
-  puts "#{prefix}#{env_str} #{cmd}"
-  system(env, cmd)
+class Matrix
+  def initialize(matrix)
+    @matrix = matrix
+  end
+
+  def each_pair
+    exclude_tuples = excludes.map { |e| [e['ruby-version'], e['rails-version']] }
+
+    ruby_versions.each do |ruby_version|
+      rails_versions.each do |rails_version|
+        tuple = [ruby_version, rails_version]
+
+        unless exclude_tuples.include?(tuple)
+          yield ruby_version, rails_version
+        end
+      end
+    end
+  end
+
+  def ruby_versions
+    @matrix["ruby-version"]
+  end
+
+  def rails_versions
+    @matrix["rails-version"]
+  end
+
+  def excludes
+    @matrix["exclude"]
+  end
 end
 
-def appraise(ruby_version, rails_version, cmd, prefix: '')
-  run(ruby_version, cmd, { "BUNDLE_GEMFILE" => "gemfiles/rails_#{rails_version}.gemfile" }, prefix: prefix)
+class Task
+  def initialize(env, cmd, tags = {}, include_in_results: true)
+    @env = env
+    @cmd = cmd
+    @tags = tags
+    @include_in_results = include_in_results
+    @exit_status = -1
+  end
+
+  def include_in_results?
+    @include_in_results
+  end
+
+  def execute(prefix)
+    puts "#{prefix}#{env_str} #{@cmd}"
+    system(@env, @cmd)
+    @exit_status = $?.exitstatus
+    nil
+  end
+
+  def success?
+    @exit_status == 0
+  end
+
+  def slug
+    @slug ||= @tags.map { |k, v| "#{k}=#{v}" }.join(" ")
+  end
+
+  private
+
+  def env_str
+    @env_str ||= @env
+      .filter_map { |k, v| k == "PATH" ? nil : "#{k}=#{v}" }
+      .join(" ")
+  end
 end
 
-task_count = matrix.size * 2
-puts "Running #{task_count} tasks"
+class Runner
+  def initialize
+    @queue = []
+  end
 
-results = matrix.map.with_index do |(ruby_version, rails_version), idx|
-  run(
-    ruby_version,
-    "bundle check || bundle install",
-    { "BUNDLE_GEMFILE" => "gemfiles/rails_#{rails_version}.gemfile" },
-    prefix: "(#{(idx * 2) + 1}/#{task_count}) "
-  )
+  def enqueue_rails(ruby_version, rails_version, cmd, **kwargs)
+    enqueue(ruby_version, rails_version, cmd, { "BUNDLE_GEMFILE" => "gemfiles/rails_#{rails_version}.gemfile" }, **kwargs)
+  end
 
-  appraise(
+  def enqueue_ruby(ruby_version, cmd, **kwargs)
+    enqueue(ruby_version, nil, cmd, { "BUNDLE_GEMFILE" => "gemfiles/ruby.gemfile" }, **kwargs)
+  end
+
+  def execute_all!
+    @queue.each_with_index do |task, idx|
+      task.execute("(#{idx + 1}/#{@queue.size}) ")
+    end
+
+    @queue.dup.tap { @queue.clear }
+  end
+
+  private
+
+  def installed_ruby_versions_by_minor
+    @installed_ruby_versions_by_minor ||= `asdf list ruby`
+      .split("\n")
+      .map { |v| v.sub("*", "").strip }
+      .select { |v| v =~ /\A\d\.\d\.\d\z/ }
+      .group_by { |v| v.split(".")[0...2].join(".") }
+      .each_with_object({}) do |(minor, versions), memo|
+        memo[minor] = versions.sort.last
+      end
+  end
+
+  def enqueue(ruby_version, rails_version, cmd, env = {}, include_in_results: true)
+    asdf_ruby_version = installed_ruby_versions_by_minor[ruby_version]
+    env["ASDF_RUBY_VERSION"] = asdf_ruby_version
+    install_path = `asdf where ruby #{asdf_ruby_version}`.strip
+    env["PATH"] = "#{File.join(install_path, "bin")}:#{ENV["PATH"]}"
+    tags = { "ruby-version" => ruby_version }
+    tags["rails-version"] = rails_version if rails_version
+    @queue << Task.new(env, cmd, tags, include_in_results: include_in_results)
+  end
+end
+
+actions = ActionsManifest.new(".github/workflows/test.yml")
+runner = Runner.new
+
+actions.matrix_for("build_rails").each_pair do |ruby_version, rails_version|
+  runner.enqueue_rails(
     ruby_version,
     rails_version,
-    "bundle exec rake spec:rails",
-    prefix: "(#{(idx * 2) + 2}/#{task_count}) "
+    "bundle check || bundle install",
+    include_in_results: false
   )
 
-  if $?.exitstatus == 0
-    "ruby-version=#{ruby_version} rails-version=#{rails_version}: SUCCEEDED"
-  else
-    "ruby-version=#{ruby_version} rails-version=#{rails_version}: FAILED"
-  end
+  runner.enqueue_rails(
+    ruby_version,
+    rails_version,
+    "bundle exec rake spec:rails"
+  )
 end
 
-puts results.join("\n")
+actions.matrix_for("build_ruby").ruby_versions.each do |ruby_version|
+  runner.enqueue_ruby(
+    ruby_version,
+    "bundle check || bundle install",
+    include_in_results: false
+  )
+
+  runner.enqueue_ruby(
+    ruby_version,
+    "bundle exec rake spec:ruby"
+  )
+end
+
+def red(str)
+  "\u001b[31m#{str}\u001b[0m"
+end
+
+def green(str)
+  "\u001b[32m#{str}\u001b[0m"
+end
+
+tasks = runner.execute_all!
+
+tasks.each do |task|
+  next unless task.include_in_results?
+  puts "#{task.slug}: #{task.success? ? green("SUCCEEDED") : red("FAILED")}"
+end
