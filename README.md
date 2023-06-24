@@ -48,7 +48,12 @@ Now, the contents of any file with a .up file extension will be passed to `Upcas
 
 ## Running Tests
 
-`bundle exec appraisal rake` should do the trick.
+If you're using [asdf](https://asdf-vm.com/), run `./script/run_appraisal.rb` to run Rails and plain Ruby tests for all supported versions.
+
+Otherwise, use Appraisal to run tests for Rails or plain ruby:
+
+1. Plain ruby: `bundle exec appraisal ruby rake spec:ruby`
+1. Rails: `bundle exec appraisal <version> rake spec:rails`. Run `bundle exec appraisal list` to see the available versions. To run tests for Rails 7.0, try `bundle exec appraisal rails-7.0 rake spec:rails`
 
 ## License
 
