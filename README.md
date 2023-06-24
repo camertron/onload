@@ -1,6 +1,6 @@
 ## onload
 
-![Tests](https://github.com/camertron/onload/actions/workflows/tests.yml/badge.svg?branch=main)
+![Tests](https://github.com/camertron/onload/actions/workflows/test.yml/badge.svg?branch=main)
 
 A preprocessor system for Ruby.
 
