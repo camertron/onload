@@ -1,5 +1,4 @@
 appraise 'ruby' do
-  gem 'rspec'
 end
 
 appraise 'rails-5.2' do
