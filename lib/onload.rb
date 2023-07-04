@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Onload
+  UNLOADABLE_EXTENSIONS = %w(.bundle .so .dll).freeze
+
   autoload :File, "onload/file"
 
   class << self

@@ -41,6 +41,7 @@ module Onload
       end
 
       return super(file) unless to_load
+      return super(file) if Onload::UNLOADABLE_EXTENSIONS.include?(::File.extname(to_load))
       return false if $LOADED_FEATURES.include?(to_load)
 
       # Must call the Kernel.load class method here because that's the one

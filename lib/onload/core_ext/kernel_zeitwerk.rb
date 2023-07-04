@@ -44,7 +44,7 @@ module Kernel
       end
     end
 
-    unless to_load
+    if !to_load || Onload::UNLOADABLE_EXTENSIONS.include?(::File.extname(to_load))
       # This will be either Ruby's original require or bootsnap's monkeypatched
       # require in setups that use bootsnap. Lord help us with all these layers
       # of patches.
