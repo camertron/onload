@@ -32,6 +32,11 @@ module Onload
 
       super
     end
+
+    # introduced in Zeitwerk v2.6.10
+    def cname_for(basename, abspath)
+      super(Onload.basename(basename), abspath)
+    end
   end
 end
 
