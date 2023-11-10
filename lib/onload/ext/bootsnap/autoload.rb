@@ -15,7 +15,7 @@ module Onload
       cached_path = Bootsnap::LoadPathCache.load_path_cache.find(path)
 
       if (unprocessed_path = Onload.unprocessed_file_for(cached_path))
-        return autoload_without_bootsnap(const, unprocessed_path)
+        return super(const, unprocessed_path)
       end
 
       super
