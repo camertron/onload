@@ -17,7 +17,12 @@ module Kernel
       # uninitialized, that's why I'm loading this file. Whatevs.
       loader = Zeitwerk::Registry.loader_for(file)
       parent, cname = loader.send(:autoloads)[file]
-      parent.send(:remove_const, cname)
+
+      if defined?(Zeitwerk::Cref) && parent.is_a?(Zeitwerk::Cref)
+        parent.remove
+      else
+        parent.send(:remove_const, cname)
+      end
 
       return onload_orig_load(f.outfile, *args)
     end
