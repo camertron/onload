@@ -1,5 +1,3 @@
-require "logger"
-
 module Onload
   class DummyApplication < ::Rails::Application
     if config.respond_to?(:load_defaults)
