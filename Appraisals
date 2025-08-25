@@ -45,3 +45,21 @@ appraise 'rails-7.1' do
     gem 'capybara', '~> 3.0'
   end
 end
+
+appraise 'rails-7.2' do
+  gem 'rails', '~> 7.2.0'
+
+  group :test do
+    gem 'rspec-rails'
+    gem 'capybara', '~> 3.0'
+  end
+end
+
+appraise 'rails-8.0' do
+  gem 'rails', '~> 8.0.0'
+
+  group :test do
+    gem 'rspec-rails'
+    gem 'capybara', '~> 3.0'
+  end
+end

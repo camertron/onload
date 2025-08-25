@@ -1,3 +1,7 @@
+## 1.0.5
+* Fix issues with Zeitwerk v2.7.3 and later.
+* Don't attempt to autoload directories.
+
 ## 1.0.4
 * Fix issues with Zeitwerk v2.6.13 and later.
   - Zeitwerk introduced the `Cref` class, which encapsulates a `mod` and `cname`. A number of internal methods used to return both of these things individually; now they are wrapped in `Cref`s.

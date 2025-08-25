@@ -4,7 +4,7 @@ require "onload"
 
 class UpcasePreprocessor
   def self.call(source)
-    source.gsub(/(\"\w+\")/, '\1.upcase')
+    source.gsub(/(\"[\w ]+\")/, '\1.upcase')
   end
 end
 

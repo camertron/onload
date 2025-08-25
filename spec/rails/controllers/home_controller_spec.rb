@@ -38,5 +38,14 @@ describe HomeController, type: :request do
         )
       end
     end
+
+    it "supports file shadowing" do
+      get "/action_list"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to(
+        have_selector("div", text: "LIST ITEM")
+      )
+    end
   end
 end

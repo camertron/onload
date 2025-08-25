@@ -1,0 +1,9 @@
+module Primer
+  module Alpha
+    class ActionList
+      def list
+        "list " + Item.new.item
+      end
+    end
+  end
+end
