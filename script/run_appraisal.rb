@@ -20,29 +20,17 @@ class Matrix
   end
 
   def each_pair
-    exclude_tuples = excludes.map { |e| [e['ruby-version'], e['rails-version']] }
-
-    ruby_versions.each do |ruby_version|
-      rails_versions.each do |rails_version|
-        tuple = [ruby_version, rails_version]
-
-        unless exclude_tuples.include?(tuple)
-          yield ruby_version, rails_version
-        end
-      end
+    @matrix["include"].each do |incl|
+      yield incl["ruby-version"], incl["rails-version"]
     end
   end
 
   def ruby_versions
-    @matrix["ruby-version"]
+    @matrix["include"].map { |incl| incl["ruby-version"] }
   end
 
   def rails_versions
-    @matrix["rails-version"]
-  end
-
-  def excludes
-    @matrix["exclude"]
+    @matrix["include"].map { |incl| incl["rails-version"] }
   end
 end
 
@@ -110,7 +98,7 @@ class Runner
     @installed_ruby_versions_by_minor ||= `asdf list ruby`
       .split("\n")
       .map { |v| v.sub("*", "").strip }
-      .select { |v| v =~ /\A\d\.\d\.\d\z/ }
+      .select { |v| v =~ /\A\d\.\d+\.\d+\z/ }
       .group_by { |v| v.split(".")[0...2].join(".") }
       .each_with_object({}) do |(minor, versions), memo|
         memo[minor] = versions.sort.last

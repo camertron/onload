@@ -3,6 +3,9 @@
 module Onload
   module BootsnapAutoloadPatch
     def autoload(const, path)
+      # only autoload files, not directories
+      return super if ::File.directory?(path)
+
       # Bootsnap monkeypatches Module.autoload in order to leverage its load
       # path cache, which effectively converts a relative path into an absolute
       # one without incurring the cost of searching the load path.

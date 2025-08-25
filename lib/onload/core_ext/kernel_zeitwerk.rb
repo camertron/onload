@@ -15,7 +15,12 @@ module Kernel
       # in order to load the resulting file. Otherwise you get an error about
       # an uninitialized constant, and it's like... yeah, I _know_ it's
       # uninitialized, that's why I'm loading this file. Whatevs.
-      loader = Zeitwerk::Registry.loader_for(file)
+      loader = if Zeitwerk::Registry.respond_to?(:loader_for)
+        Zeitwerk::Registry.loader_for(file)
+      else
+        Zeitwerk::Registry.autoloads.registered?(file)
+      end
+
       parent, cname = loader.send(:autoloads)[file]
 
       if defined?(Zeitwerk::Cref) && parent.is_a?(Zeitwerk::Cref)

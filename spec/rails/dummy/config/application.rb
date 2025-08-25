@@ -11,5 +11,7 @@ module Onload
     config.autoload_paths << ::File.expand_path(
       ::File.join(*%w[.. .. .. fixtures]), __dir__
     )
+
+    config.autoload_paths << Rails.root.join("lib").to_s
   end
 end
