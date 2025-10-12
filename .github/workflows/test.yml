@@ -54,8 +54,8 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
         env:
-          BUNDLE_GEMFILE: gemfiles/ruby.gemfile
+          BUNDLE_GEMFILE: gemfiles/ruby_${{ matrix.ruby-version }}.gemfile
       - name: Run Ruby Tests
         run: bundle exec rake spec:ruby
         env:
-          BUNDLE_GEMFILE: gemfiles/ruby.gemfile
+          BUNDLE_GEMFILE: gemfiles/ruby_${{ matrix.ruby-version }}.gemfile
