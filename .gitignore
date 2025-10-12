@@ -5,3 +5,4 @@ gemfiles/*.lock
 pkg/
 spec/fixtures/hello.rb
 spec/rails/dummy/log/
+vendor/bundle

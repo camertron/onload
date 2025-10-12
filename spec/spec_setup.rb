@@ -17,6 +17,14 @@ module Onload
         processed_file = Onload::File.new(unprocessed_file).outfile
         ::File.unlink(processed_file) if ::File.exist?(processed_file)
         $LOADED_FEATURES.delete(unprocessed_file)
+
+        if defined?(Rails)
+          if Rails.respond_to?(:autoloaders)
+            Rails.autoloaders.main.reload
+          else
+            ActiveSupport::Dependencies.remove_unloadable_constants!
+          end
+        end
       end
 
       yield
@@ -34,7 +42,16 @@ RSpec.configure do |config|
   config.extend(Onload::TestHelpers)
 
   config.around(:each) do |example|
-    Onload::TestHelpers.with_clean_env { example.run }
+    @ignore_path = ::File.join("spec", ".testignore")
+
+    ::File.unlink(@ignore_path) if ::File.exist?(@ignore_path)
+    ::File.write(@ignore_path, "")
+
+    begin
+      Onload::TestHelpers.with_clean_env { example.run }
+    ensure
+      ::File.unlink(@ignore_path) if ::File.exist?(@ignore_path)
+    end
   end
 end
 

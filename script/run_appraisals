@@ -1,0 +1,4 @@
+#! /bin/bash
+
+bundle exec appraisal-run gemfiles/rails*.gemfile -- bundle exec rake spec:rails
+bundle exec appraisal-run gemfiles/ruby*.gemfile -- bundle exec rake spec:ruby

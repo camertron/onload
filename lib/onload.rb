@@ -3,7 +3,9 @@
 module Onload
   UNLOADABLE_EXTENSIONS = %w(.bundle .so .dll).freeze
 
-  autoload :File, "onload/file"
+  autoload :Config,     "onload/config"
+  autoload :File,       "onload/file"
+  autoload :IgnoreFile, "onload/ignore_file"
 
   class << self
     attr_accessor :enabled
@@ -103,6 +105,27 @@ module Onload
 
     def glob
       @glob ||= "*{#{each_extension.to_a.join(",")}}"
+    end
+
+    def config
+      @config ||= Config.new
+    end
+
+    def with_config(override_hash)
+      new_config = config.dup.tap do |new_config|
+        override_hash.each_pair do |k, v|
+          new_config.send("#{k}=", v)
+        end
+      end
+
+      old_config = config
+      @config = new_config
+
+      yield
+
+      nil
+    ensure
+      @config = old_config
     end
 
     private
