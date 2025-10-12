@@ -46,14 +46,25 @@ Onload.install!
 
 Now, the contents of any file with a .up file extension will be passed to `UpcasePreprocessor.call`. The return value will be written to a separate Ruby file and loaded instead of the original .up file.
 
+## Ignoring Processed Files
+
+It can often be desirable to add processed/generated files to your .gitignore file. Onload comes with a mechanism that can do exactly that. Simply set the config option before running onload:
+
+```ruby
+Onload.config.ignore_path = ".gitignore"
+```
+
+Now whenever files are processed, the generated file will be automatically updated.
+
 ## Running Tests
 
-If you're using [asdf](https://asdf-vm.com/), run `./script/run_appraisal.rb` to run Rails and plain Ruby tests for all supported versions.
+Install Docker, then run `./script/run_appraisals` to run Rails and plain Ruby tests for all supported versions.
 
 Otherwise, use Appraisal to run tests for Rails or plain ruby:
 
 1. Plain ruby: `bundle exec appraisal ruby rake spec:ruby`
 1. Rails: `bundle exec appraisal <version> rake spec:rails`. Run `bundle exec appraisal list` to see the available versions. To run tests for Rails 7.0, try `bundle exec appraisal rails-7.0 rake spec:rails`
+1. Note that you must be running the correct version of Ruby specified in each gemfile.
 
 ## License
 
