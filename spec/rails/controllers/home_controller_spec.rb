@@ -13,6 +13,15 @@ describe HomeController, type: :request do
       )
     end
 
+    it "adds an entry to the specified ignore file" do
+      Onload.with_config(ignore_path: @ignore_path) do
+        get "/"
+
+        ignore_file = Onload::IgnoreFile.load(@ignore_path)
+        expect(ignore_file).to include("fixtures/hello.rb")
+      end
+    end
+
     it "allows hot reloading" do
       get "/"
 

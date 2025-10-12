@@ -9,6 +9,7 @@ end
 
 group :development do
   gem 'appraisal'
+  gem 'appraisal-run'
   gem 'benchmark-ips'
 end
 

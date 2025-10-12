@@ -14,4 +14,12 @@ describe Onload do
       expect(Hello.new.hello).to eq("hello")
     end
   end
+
+  it "adds an entry to the specified ignore file" do
+    Onload.with_config(ignore_path: @ignore_path) do
+      require "hello"
+      ignore_file = Onload::IgnoreFile.load(@ignore_path)
+      expect(ignore_file).to include("fixtures/hello.rb")
+    end
+  end
 end

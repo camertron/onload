@@ -1,3 +1,8 @@
+## 1.1.0
+* Automatically add generated files to the specified ignore file, eg. `.gitignore`, when they are written.
+  - Specify an ignore file by setting `Onload.config.ignore_path` to the path to the ignore file you'd like to use.
+* Use appraisal-run to run tests locally for all Ruby and Rails versions.
+
 ## 1.0.5
 * Fix issues with Zeitwerk v2.7.3 and later.
 * Don't attempt to autoload directories.
