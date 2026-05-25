@@ -15,18 +15,34 @@ module Kernel
       # in order to load the resulting file. Otherwise you get an error about
       # an uninitialized constant, and it's like... yeah, I _know_ it's
       # uninitialized, that's why I'm loading this file. Whatevs.
-      loader = if Zeitwerk::Registry.respond_to?(:loader_for)
+      loader = if Zeitwerk::Registry.respond_to?(:autoloads)
+        autoloads = Zeitwerk::Registry.autoloads
+
+        if autoloads.respond_to?(:registered?)
+          autoloads.registered?(file)
+        else
+          autoloads[file]
+        end
+      elsif Zeitwerk::Registry.respond_to?(:loader_for)
         Zeitwerk::Registry.loader_for(file)
-      else
-        Zeitwerk::Registry.autoloads.registered?(file)
       end
 
-      parent, cname = loader.send(:autoloads)[file]
+      autoload_entry = if loader && loader.respond_to?(:autoloads, true)
+        loader.send(:autoloads)[file]
+      end
 
-      if defined?(Zeitwerk::Cref) && parent.is_a?(Zeitwerk::Cref)
-        parent.remove
-      else
-        parent.send(:remove_const, cname)
+      if autoload_entry
+        if defined?(Zeitwerk::Cref) && autoload_entry.is_a?(Zeitwerk::Cref)
+          autoload_entry.remove
+        else
+          parent, cname = autoload_entry
+
+          if defined?(Zeitwerk::Cref) && parent.is_a?(Zeitwerk::Cref)
+            parent.remove
+          else
+            parent.send(:remove_const, cname)
+          end
+        end
       end
 
       return onload_orig_load(f.outfile, *args)

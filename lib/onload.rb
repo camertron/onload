@@ -11,6 +11,9 @@ module Onload
     attr_accessor :enabled
     alias enabled? enabled
 
+    attr_reader :installed
+    alias installed? installed
+
     def register(extension, processor_klass)
       processors[extension] = processor_klass
     end
@@ -43,6 +46,8 @@ module Onload
       else
         require "onload/ext/bootsnap/autoload"
       end
+
+      @installed = true
     end
 
     def process?(path)
@@ -136,6 +141,7 @@ module Onload
   end
 
   self.enabled = true
+  @installed = false
 end
 
 if Kernel.const_defined?(:Rails)
