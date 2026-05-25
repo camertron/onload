@@ -20,6 +20,8 @@ jobs:
             rails-version: '7.2'
           - ruby-version: '3.4'
             rails-version: '8.0'
+          - ruby-version: '3.4'
+            rails-version: '8.1'
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby ${{ matrix.ruby-version }}

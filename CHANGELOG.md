@@ -1,3 +1,7 @@
+## 1.1.1
+* Fix issues with Zeitwerk v2.8 and later.
+* Add support for Rails 8.1.
+
 ## 1.1.0
 * Automatically add generated files to the specified ignore file, eg. `.gitignore`, when they are written.
   - Specify an ignore file by setting `Onload.config.ignore_path` to the path to the ignore file you'd like to use.
